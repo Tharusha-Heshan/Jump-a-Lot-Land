@@ -4,25 +4,25 @@
 	<Project>
 		<Option title="Jump-a-lot-3" />
 		<Option pch_mode="2" />
-		<Option compiler="gcc-mingw32" />
+		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
 				<Option output="bin/Debug/Jump-a-lot-3" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="C:/Program Files/CodeBlocks/MinGW/x86_64-w64-mingw32/bin" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
-				<Option compiler="gcc-mingw32" />
+				<Option compiler="gcc" />
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/Jump-a-lot-3" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="C:/Program Files/CodeBlocks/MinGW/x86_64-w64-mingw32/bin" />
 				<Option object_output="obj/Release/" />
 				<Option type="0" />
-				<Option compiler="gcc-mingw32" />
+				<Option compiler="gcc" />
 			</Target>
 		</Build>
 		<Compiler>
-			<Add directory="C:/Program Files/CodeBlocks/MinGW/x86_64-w64-mingw32/include" />
+			<Add directory="C:/Program Files/CodeBlocks/MinGW/include" />
 		</Compiler>
 		<Linker>
 			<Add library="freeglut" />
@@ -30,8 +30,21 @@
 			<Add library="glu32" />
 			<Add library="winmm" />
 			<Add library="gdi32" />
-			<Add directory="C:/Program Files/CodeBlocks/MinGW/x86_64-w64-mingw32/lib" />
+			<Add directory="C:/Program Files/CodeBlocks/MinGW/lib" />
 		</Linker>
+		<Unit filename="Constants.h" />
+		<Unit filename="Level.cpp" />
+		<Unit filename="Level.h" />
+		<Unit filename="Level1.cpp" />
+		<Unit filename="Level1.h" />
+		<Unit filename="Level2.cpp" />
+		<Unit filename="Level2.h" />
+		<Unit filename="Level3.cpp" />
+		<Unit filename="Level3.h" />
+		<Unit filename="Level3Logic.cpp" />
+		<Unit filename="Level3Logic.h" />
+		<Unit filename="Player.cpp" />
+		<Unit filename="Player.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

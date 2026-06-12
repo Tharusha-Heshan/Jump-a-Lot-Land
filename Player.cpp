@@ -22,6 +22,8 @@ const float JUMP_FORCE = 7.5f;
 bool isGrounded = false;
 bool facingRight = true;
 bool isMoving = false;
+float playerScale = 1.0f;
+bool sKeyWasDown = false;
 
 int animFrame = 0;
 int frameTicks = 0;
@@ -42,6 +44,16 @@ void respawnPlayer() {
 }
 
 void updatePlayerPhysics() {
+    if (currentActiveLevel == 2) {
+        bool sDown = keyStates['s'] || keyStates['S'];
+        if (sDown && !sKeyWasDown) {
+            playerScale = (playerScale == 1.0f) ? 0.5f : 1.0f;
+        }
+        sKeyWasDown = sDown;
+    } else {
+        playerScale = 1.0f;
+    }
+
     if (keyStates['a'] || keyStates['A']) {
         playerVx = -MOVE_SPEED;
         facingRight = false;
@@ -64,8 +76,11 @@ void updatePlayerPhysics() {
         isGrounded = false;
     }
 
+    float cw = PLAYER_WIDTH * playerScale;
+    float ch = PLAYER_HEIGHT * playerScale;
+
     playerX += playerVx;
-    if (checkCollision(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT)) {
+    if (checkCollision(playerX, playerY, cw, ch)) {
         playerX -= playerVx;
     }
 
@@ -81,7 +96,7 @@ void updatePlayerPhysics() {
 
     playerY += playerVy;
 
-    if (checkCollision(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT)) {
+    if (checkCollision(playerX, playerY, cw, ch)) {
         if (playerVy < 0) {
             isGrounded = true;
         }
@@ -91,7 +106,7 @@ void updatePlayerPhysics() {
         isGrounded = false;
     }
 
-    if (checkLavaCollision(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT) || playerY < 0) {
+    if (checkLavaCollision(playerX, playerY, cw, ch) || playerY < 0) {
         respawnPlayer();
     }
 
@@ -112,41 +127,49 @@ void drawPlayer() {
         bobOffsetY = 3.0f;
     }
 
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glPushMatrix();
+    glTranslatef(playerX, playerY, 0.0f);
+    glScalef(playerScale, playerScale, 1.0f);
+
     glColor3f(0.0f, 0.85f, 1.0f);
     glBegin(GL_QUADS);
-    glVertex2f(playerX, playerY + bobOffsetY);
-    glVertex2f(playerX + PLAYER_WIDTH, playerY + bobOffsetY);
-    glVertex2f(playerX + PLAYER_WIDTH, playerY + PLAYER_HEIGHT + bobOffsetY);
-    glVertex2f(playerX, playerY + PLAYER_HEIGHT + bobOffsetY);
+    glVertex2f(0, bobOffsetY);
+    glVertex2f(PLAYER_WIDTH, bobOffsetY);
+    glVertex2f(PLAYER_WIDTH, PLAYER_HEIGHT + bobOffsetY);
+    glVertex2f(0, PLAYER_HEIGHT + bobOffsetY);
     glEnd();
 
     glColor3f(1.0f, 0.9f, 0.0f);
     glBegin(GL_QUADS);
     if (facingRight) {
-        glVertex2f(playerX + 12, playerY + 16 + bobOffsetY);
-        glVertex2f(playerX + 22, playerY + 16 + bobOffsetY);
-        glVertex2f(playerX + 22, playerY + 26 + bobOffsetY);
-        glVertex2f(playerX + 12, playerY + 26 + bobOffsetY);
+        glVertex2f(12, 16 + bobOffsetY);
+        glVertex2f(22, 16 + bobOffsetY);
+        glVertex2f(22, 26 + bobOffsetY);
+        glVertex2f(12, 26 + bobOffsetY);
     } else {
-        glVertex2f(playerX + 2, playerY + 16 + bobOffsetY);
-        glVertex2f(playerX + 12, playerY + 16 + bobOffsetY);
-        glVertex2f(playerX + 12, playerY + 26 + bobOffsetY);
-        glVertex2f(playerX + 2, playerY + 26 + bobOffsetY);
+        glVertex2f(2, 16 + bobOffsetY);
+        glVertex2f(12, 16 + bobOffsetY);
+        glVertex2f(12, 26 + bobOffsetY);
+        glVertex2f(2, 26 + bobOffsetY);
     }
     glEnd();
 
     glColor3f(0.0f, 0.2f, 0.6f);
     glBegin(GL_QUADS);
     float leftLegExt = (isMoving && animFrame == 1) ? 4.0f : 0.0f;
-    glVertex2f(playerX + 2, playerY);
-    glVertex2f(playerX + 10, playerY);
-    glVertex2f(playerX + 10, playerY + 6 + leftLegExt);
-    glVertex2f(playerX + 2, playerY + 6 + leftLegExt);
+    glVertex2f(2, 0);
+    glVertex2f(10, 0);
+    glVertex2f(10, 6 + leftLegExt);
+    glVertex2f(2, 6 + leftLegExt);
 
     float rightLegExt = (isMoving && animFrame == 3) ? 4.0f : 0.0f;
-    glVertex2f(playerX + 14, playerY);
-    glVertex2f(playerX + 22, playerY);
-    glVertex2f(playerX + 22, playerY + 6 + rightLegExt);
-    glVertex2f(playerX + 14, playerY + 6 + rightLegExt);
+    glVertex2f(14, 0);
+    glVertex2f(22, 0);
+    glVertex2f(22, 6 + rightLegExt);
+    glVertex2f(14, 6 + rightLegExt);
     glEnd();
+
+    glPopMatrix();
 }

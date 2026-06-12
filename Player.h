@@ -6,6 +6,7 @@ extern float playerY;
 
 extern const float PLAYER_WIDTH;
 extern const float PLAYER_HEIGHT;
+extern float playerScale;
 
 void setSpawnPoint(float startX, float startY);
 void respawnPlayer();
