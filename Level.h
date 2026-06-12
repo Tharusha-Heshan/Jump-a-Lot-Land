@@ -23,9 +23,6 @@ extern float platform3Speed;
 void loadLevel(int levelID);
 void drawTile(float x, float y, int type);
 void drawLevel();
-void updateMovingPlatform();
-void updateMeteor();
-bool checkMeteorCollision();
 bool checkCollision(float x, float y, float width, float height);
 bool checkLavaCollision(float x, float y, float width, float height);
 

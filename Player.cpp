@@ -104,10 +104,6 @@ void updatePlayerPhysics() {
     } else {
         animFrame = 0;
     }
-    if(currentActiveLevel == 3)
-    {
-    //add later
-    }
 }
 
 void drawPlayer() {

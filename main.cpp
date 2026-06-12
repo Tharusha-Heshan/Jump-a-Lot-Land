@@ -15,9 +15,6 @@ void handleKeyDown(unsigned char key, int x, int y) {
     if (key == '1') {
         loadLevel(1);
     }
-    if (key == '2') {
-        loadLevel(2);
-    }
     if (key == '3') {
         loadLevel(3);
     }
