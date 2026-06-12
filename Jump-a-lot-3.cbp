@@ -32,6 +32,17 @@
 			<Add library="gdi32" />
 			<Add directory="C:/Program Files/CodeBlocks/MinGW/x86_64-w64-mingw32/lib" />
 		</Linker>
+		<Unit filename="Constants.h" />
+		<Unit filename="Level.cpp" />
+		<Unit filename="Level.h" />
+		<Unit filename="Level1.cpp" />
+		<Unit filename="Level1.h" />
+		<Unit filename="Level3.cpp" />
+		<Unit filename="Level3.h" />
+		<Unit filename="Level3Logic.cpp" />
+		<Unit filename="Level3Logic.h" />
+		<Unit filename="Player.cpp" />
+		<Unit filename="Player.h" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />

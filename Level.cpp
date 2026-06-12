@@ -1,5 +1,6 @@
 #include "Level.h"
 #include "Level1.h"
+#include "Level2.h"
 #include "level3.h"
 #include "level3logic.h"
 #include "Player.h"
@@ -15,10 +16,12 @@ void loadLevel(int levelID) {
 
     for (int r = 0; r < ROWS; r++) {
         for (int c = 0; c < COLS; c++) {
-            if (levelID == 1) {
+            if (levelID == 1)
+            {
                 levelMap[r][c] = level1Data[r][c];
             }
-            else if (levelID == 3) {
+            else if (levelID == 3)
+            {
                 levelMap[r][c] = level3Data[r][c];
             }
         }
