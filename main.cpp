@@ -4,33 +4,46 @@
 #include "Player.h"
 #include "Level3Logic.h"
 #include <cstdio>
+#include <cmath>
 
 bool keyStates[256] = { false };
 bool winMessageShown = false;
 
+// Camera and Window Globals
+float cameraX = 0.0f;
+float cameraY = 0.0f;
+
 void handleKeyDown(unsigned char key, int x, int y) {
     keyStates[key] = true;
-
-    // Press 1 or 2 to swap worlds instantly
-    if (key == '1') {
-        loadLevel(1);
-    }
-    if (key == '3') {
-        loadLevel(3);
-    }
+    if (key == '1') loadLevel(1);
+    if (key == '3') loadLevel(3);
 }
 
 void handleKeyUp(unsigned char key, int x, int y) {
     keyStates[key] = false;
 }
 
+void updateCamera() {
+    // Keep player in center of screen
+    float targetX = playerX - (WINDOW_WIDTH / 2.0f);
+    float targetY = playerY - (WINDOW_HEIGHT / 2.0f);
+
+    // Smoothing (Optional: remove the 0.1f factor if you want instant snap)
+    cameraX += (targetX - cameraX) * 0.1f;
+    cameraY += (targetY - cameraY) * 0.1f;
+
+    // Clamp camera to level edges so you don't see outside the map
+    if (cameraX < 0) cameraX = 0;
+    if (cameraY < 0) cameraY = 0;
+}
+
 void updatePhysicsLoop(int value) {
     updatePlayerPhysics();
-    if(currentActiveLevel == 3)
-    {
+    updateCamera();
+
+    if(currentActiveLevel == 3) {
         updateLevel3(0.016f);
-        if(isLevel3Complete() && !winMessageShown)
-        {
+        if(isLevel3Complete() && !winMessageShown) {
             printf("LEVEL COMPLETE!\n");
             winMessageShown = true;
         }
@@ -44,7 +57,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Call external render functions
-    drawLevel(); // This now draws the dynamic background AND the tiles
+    drawLevel();
     drawPlayer();
 
     glutSwapBuffers();
@@ -56,7 +69,7 @@ void init() {
     glLoadIdentity();
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
 
-    loadLevel(1); // Default to the Lava Level on boot
+    loadLevel(1);
 }
 
 int main(int argc, char** argv) {
