@@ -41,6 +41,10 @@
 		<Unit filename="Level3.h" />
 		<Unit filename="Level3Logic.cpp" />
 		<Unit filename="Level3Logic.h" />
+		<Unit filename="Level5.cpp" />
+		<Unit filename="Level5.h" />
+		<Unit filename="Level5Logic.cpp" />
+		<Unit filename="Level5Logic.h" />
 		<Unit filename="Player.cpp" />
 		<Unit filename="Player.h" />
 		<Unit filename="main.cpp" />

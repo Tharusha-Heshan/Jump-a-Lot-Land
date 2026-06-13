@@ -16,9 +16,11 @@ void handleKeyDown(unsigned char key, int x, int y) {
 
     if (key == '1') {
         loadLevel(1);
+        winMessageShown = false;
     }
     if (key == '2') {
         loadLevel(2);
+        winMessageShown = false;
     }
     if (key == '3') {
         loadLevel(3);
@@ -89,6 +91,15 @@ void updatePhysicsLoop(int value) {
         if(isLevel5Complete() && !winMessageShown)
         {
             printf("LEVEL 5 COMPLETE!\n");
+            winMessageShown = true;
+        }
+    }
+    else if(currentActiveLevel == 5)
+    {
+        updateLevel5(0.016f);
+        if(isLevel5Complete() && !winMessageShown)
+        {
+            printf("LEVEL 5 COMPLETE! You escaped the jungle!\n");
             winMessageShown = true;
         }
     }

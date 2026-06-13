@@ -1,15 +1,16 @@
 A custom-built 2D game engine developed in C++ using OpenGL and FreeGLUT. This project features a multi-level world system, custom physics, and dynamic tile-based rendering.
 
 ## Features
-* **Multi-Level Support:** Seamlessly switch between diverse environments (Lava, Ice, and Moon worlds).
+* **Multi-Level Support:** Seamlessly switch between diverse environments (Lava, Ice, Moon, and Jungle worlds).
 * **Physics System:** Custom gravity, collision detection, and platforming mechanics.
 * **Animated Sprites:** Smooth character movement and frame-based animation.
 * **Dynamic Rendering:** Real-time updates for moving platforms and environmental effects.
+* **Level 5 - Jungle World:** A giant tree, glowing fireflies, swinging log platforms, falling leaves, hanging thorns and poison swamp hazards, and a vine portal goal.
 
 ## Controls
 * **W:** Jump
 * **A / D:** Move Left / Right
-* **1, 2, 3:** Switch between different levels
+* **1, 2, 3, 5:** Switch between different levels
 
 ## Technology Stack
 * **Language:** C++

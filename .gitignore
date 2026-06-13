@@ -13,3 +13,4 @@
 # Build directories
 bin/
 obj/
+build/

@@ -123,6 +123,11 @@ bool checkCollision(float x, float y, float width, float height) {
             return true;
         }
     }
+    else if(currentActiveLevel == 5) {
+        if(checkPlatform5Collision(x, y, width, height)) {
+            return true;
+        }
+    }
 
     // Level 4 Moving Platform Collisions
     if(currentActiveLevel == 4) {
