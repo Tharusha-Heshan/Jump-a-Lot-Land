@@ -39,6 +39,8 @@
 		<Unit filename="Level1.h" />
 		<Unit filename="Level2.cpp" />
 		<Unit filename="Level2.h" />
+		<Unit filename="Level2Logic.cpp" />
+		<Unit filename="Level2Logic.h" />
 		<Unit filename="Level3.cpp" />
 		<Unit filename="Level3.h" />
 		<Unit filename="Level3Logic.cpp" />
