@@ -3,6 +3,7 @@
 #include "Level.h"
 #include "Player.h"
 #include "Level3Logic.h"
+#include "Level5Logic.h"
 #include <cstdio>
 
 bool keyStates[256] = { false };
@@ -14,12 +15,19 @@ void handleKeyDown(unsigned char key, int x, int y) {
     // Press 1 or 2 to swap worlds instantly
     if (key == '1') {
         loadLevel(1);
+        winMessageShown = false;
     }
     if (key == '2') {
         loadLevel(2);
+        winMessageShown = false;
     }
     if (key == '3') {
         loadLevel(3);
+        winMessageShown = false;
+    }
+    if (key == '5') {
+        loadLevel(5);
+        winMessageShown = false;
     }
 }
 
@@ -35,6 +43,15 @@ void updatePhysicsLoop(int value) {
         if(isLevel3Complete() && !winMessageShown)
         {
             printf("LEVEL COMPLETE!\n");
+            winMessageShown = true;
+        }
+    }
+    else if(currentActiveLevel == 5)
+    {
+        updateLevel5(0.016f);
+        if(isLevel5Complete() && !winMessageShown)
+        {
+            printf("LEVEL 5 COMPLETE! You escaped the jungle!\n");
             winMessageShown = true;
         }
     }

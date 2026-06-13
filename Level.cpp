@@ -3,6 +3,8 @@
 #include "Level2.h"
 #include "level3.h"
 #include "level3logic.h"
+#include "Level5.h"
+#include "Level5Logic.h"
 #include "Player.h"
 #include <GL/freeglut.h>
 #include <cmath>
@@ -24,6 +26,10 @@ void loadLevel(int levelID) {
             {
                 levelMap[r][c] = level3Data[r][c];
             }
+            else if (levelID == 5)
+            {
+                levelMap[r][c] = level5Data[r][c];
+            }
         }
     }
 
@@ -36,6 +42,11 @@ void loadLevel(int levelID) {
     case 3:
         setSpawnPoint(10.0f, 180.0f);
         resetLevel3State();
+        break;
+
+    case 5:
+        setSpawnPoint(50.0f, 250.0f);
+        resetLevel5State();
         break;
     }
 }
@@ -51,8 +62,8 @@ bool checkCollision(float x, float y, float width, float height) {
 
         if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
             int tileType = levelMap[row][col];
-            // Treat Lava Rock (1, 2) and Moon Ground (11, 12) as solid ground
-            if (tileType == 1 || tileType == 2 || tileType == 6 || tileType == 7 || tileType == 11 || tileType == 12) {
+            // Treat Lava Rock (1, 2), Moon Ground (11, 12) and Jungle Ground/Branches (14, 15) as solid ground
+            if (tileType == 1 || tileType == 2 || tileType == 6 || tileType == 7 || tileType == 11 || tileType == 12 || tileType == 14 || tileType == 15) {
                 return true;
             }
         }
@@ -60,6 +71,11 @@ bool checkCollision(float x, float y, float width, float height) {
 
     if(currentActiveLevel == 3) {
         if(checkPlatformCollision(x, y, width, height)) {
+            return true;
+        }
+    }
+    else if(currentActiveLevel == 5) {
+        if(checkPlatform5Collision(x, y, width, height)) {
             return true;
         }
     }
@@ -76,8 +92,8 @@ bool checkLavaCollision(float x, float y, float width, float height) {
 
     if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
         int tileType = levelMap[row][col];
-        // Treat Lava (3, 4) and Freezing Water (8, 9) as deadly hazards
-        return (tileType == 3 || tileType == 4 || tileType == 8 || tileType == 9);
+        // Treat Lava (3, 4), Freezing Water (8, 9) and Jungle hazards (17, 18, 19) as deadly hazards
+        return (tileType == 3 || tileType == 4 || tileType == 8 || tileType == 9 || tileType == 17 || tileType == 18 || tileType == 19);
     }
     return false;
 }
@@ -364,6 +380,211 @@ void drawTile(float x, float y, int type) {
         glVertex2f(x + 4, y + TILE_SIZE - 4);
         glEnd();
     }
+
+    else if (type == 14) {
+        // Jungle Ground / Tree Trunk
+        glColor3f(0.32f, 0.20f, 0.10f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y);
+        glVertex2f(x + TILE_SIZE, y);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE);
+        glVertex2f(x, y + TILE_SIZE);
+        glEnd();
+
+        // Grassy top layer
+        glColor3f(0.18f, 0.55f, 0.18f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y + TILE_SIZE - 8);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE - 8);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE);
+        glVertex2f(x, y + TILE_SIZE);
+        glEnd();
+
+        // Bark texture lines
+        glColor3f(0.22f, 0.13f, 0.06f);
+        glBegin(GL_LINES);
+        glVertex2f(x + 8, y + 2);
+        glVertex2f(x + 8, y + TILE_SIZE - 10);
+        glVertex2f(x + 26, y + 2);
+        glVertex2f(x + 26, y + TILE_SIZE - 10);
+        glEnd();
+
+        // Swaying grass tufts on top
+        float swayG = sinf(timeSec * 2.0f + x * 0.07f) * 2.0f;
+        glColor3f(0.28f, 0.72f, 0.22f);
+        glBegin(GL_TRIANGLES);
+        glVertex2f(x + 3, y + TILE_SIZE - 6);
+        glVertex2f(x + 8 + swayG, y + TILE_SIZE + 7);
+        glVertex2f(x + 13, y + TILE_SIZE - 6);
+
+        glVertex2f(x + 17, y + TILE_SIZE - 6);
+        glVertex2f(x + 22 + swayG, y + TILE_SIZE + 9);
+        glVertex2f(x + 27, y + TILE_SIZE - 6);
+
+        glVertex2f(x + 27, y + TILE_SIZE - 6);
+        glVertex2f(x + 32 + swayG, y + TILE_SIZE + 6);
+        glVertex2f(x + 37, y + TILE_SIZE - 6);
+        glEnd();
+
+        // Tiny jungle flower accents (deterministic per-tile placement)
+        float flowerPhase = fmodf(x * 0.37f, 3.0f);
+        if (flowerPhase < 1.0f) {
+            glColor3f(0.95f, 0.30f, 0.55f);
+            glBegin(GL_QUADS);
+            glVertex2f(x + 20, y + TILE_SIZE - 4);
+            glVertex2f(x + 24, y + TILE_SIZE - 4);
+            glVertex2f(x + 24, y + TILE_SIZE);
+            glVertex2f(x + 20, y + TILE_SIZE);
+            glEnd();
+        } else if (flowerPhase < 2.0f) {
+            glColor3f(1.0f, 0.85f, 0.2f);
+            glBegin(GL_QUADS);
+            glVertex2f(x + 5, y + TILE_SIZE - 4);
+            glVertex2f(x + 9, y + TILE_SIZE - 4);
+            glVertex2f(x + 9, y + TILE_SIZE);
+            glVertex2f(x + 5, y + TILE_SIZE);
+            glEnd();
+        }
+    }
+
+    else if (type == 15) {
+        // Branch Platform
+        glColor3f(0.42f, 0.27f, 0.13f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y);
+        glVertex2f(x + TILE_SIZE, y);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE - 6);
+        glVertex2f(x, y + TILE_SIZE - 6);
+        glEnd();
+
+        // Leafy top
+        glColor3f(0.20f, 0.62f, 0.20f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y + TILE_SIZE - 6);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE - 6);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE);
+        glVertex2f(x, y + TILE_SIZE);
+        glEnd();
+
+        // Bark ring highlight
+        glColor3f(0.55f, 0.38f, 0.20f);
+        glBegin(GL_QUADS);
+        glVertex2f(x + 2, y + 2);
+        glVertex2f(x + TILE_SIZE - 2, y + 2);
+        glVertex2f(x + TILE_SIZE - 2, y + 6);
+        glVertex2f(x + 2, y + 6);
+        glEnd();
+
+        // Small swaying leaf tufts on top of the branch
+        float swayB = sinf(timeSec * 2.5f + x * 0.09f) * 1.5f;
+        glColor3f(0.32f, 0.78f, 0.28f);
+        glBegin(GL_TRIANGLES);
+        glVertex2f(x + 6, y + TILE_SIZE);
+        glVertex2f(x + 10 + swayB, y + TILE_SIZE + 9);
+        glVertex2f(x + 14, y + TILE_SIZE);
+
+        glVertex2f(x + 26, y + TILE_SIZE);
+        glVertex2f(x + 30 + swayB, y + TILE_SIZE + 9);
+        glVertex2f(x + 34, y + TILE_SIZE);
+        glEnd();
+    }
+
+    else if (type == 17) {
+        // Hanging Thorns hazard
+        float sway = sinf(timeSec * 4.0f + x * 0.05f) * 3.0f;
+
+        // Vine
+        glColor3f(0.15f, 0.35f, 0.10f);
+        glBegin(GL_QUADS);
+        glVertex2f(x + TILE_SIZE / 2 - 2 + sway, y);
+        glVertex2f(x + TILE_SIZE / 2 + 2 + sway, y);
+        glVertex2f(x + TILE_SIZE / 2 + 2, y + TILE_SIZE);
+        glVertex2f(x + TILE_SIZE / 2 - 2, y + TILE_SIZE);
+        glEnd();
+
+        // Thorn spikes
+        glColor3f(0.55f, 0.15f, 0.10f);
+        glBegin(GL_TRIANGLES);
+        glVertex2f(x + 4 + sway, y + TILE_SIZE);
+        glVertex2f(x + 14 + sway, y + TILE_SIZE);
+        glVertex2f(x + 9 + sway, y + TILE_SIZE - 16);
+
+        glVertex2f(x + TILE_SIZE - 14 + sway, y + TILE_SIZE);
+        glVertex2f(x + TILE_SIZE - 4 + sway, y + TILE_SIZE);
+        glVertex2f(x + TILE_SIZE - 9 + sway, y + TILE_SIZE - 20);
+        glEnd();
+    }
+
+    else if (type == 18) {
+        // Poison Swamp hazard
+        glColor3f(0.18f, 0.30f, 0.10f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y);
+        glVertex2f(x + TILE_SIZE, y);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE);
+        glVertex2f(x, y + TILE_SIZE);
+        glEnd();
+
+        // Toxic surface ripple
+        float ripple = (sinf(timeSec * 2.5f + x * 0.08f) + 1.0f) * 0.5f;
+        glColor3f(0.35f + ripple * 0.25f, 0.55f + ripple * 0.25f, 0.10f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y + TILE_SIZE - 8);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE - 8);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE);
+        glVertex2f(x, y + TILE_SIZE);
+        glEnd();
+
+        // Bubbles
+        glColor3f(0.6f, 0.85f, 0.3f);
+        glBegin(GL_QUADS);
+        glVertex2f(x + 8, y + 10 + ripple * 4);
+        glVertex2f(x + 12, y + 10 + ripple * 4);
+        glVertex2f(x + 12, y + 14 + ripple * 4);
+        glVertex2f(x + 8, y + 14 + ripple * 4);
+
+        glVertex2f(x + 24, y + 16 - ripple * 4);
+        glVertex2f(x + 29, y + 16 - ripple * 4);
+        glVertex2f(x + 29, y + 21 - ripple * 4);
+        glVertex2f(x + 24, y + 21 - ripple * 4);
+        glEnd();
+    }
+
+    else if (type == 19) {
+        // Ground Spikes hazard
+        glColor3f(0.12f, 0.10f, 0.10f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y);
+        glVertex2f(x + TILE_SIZE, y);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE - 10);
+        glVertex2f(x, y + TILE_SIZE - 10);
+        glEnd();
+
+        // Sharp metallic spikes
+        glColor3f(0.55f, 0.55f, 0.60f);
+        glBegin(GL_TRIANGLES);
+        glVertex2f(x + 2, y + TILE_SIZE - 10);
+        glVertex2f(x + 9, y + TILE_SIZE + 8);
+        glVertex2f(x + 16, y + TILE_SIZE - 10);
+
+        glVertex2f(x + 14, y + TILE_SIZE - 10);
+        glVertex2f(x + 21, y + TILE_SIZE + 10);
+        glVertex2f(x + 28, y + TILE_SIZE - 10);
+
+        glVertex2f(x + 26, y + TILE_SIZE - 10);
+        glVertex2f(x + 33, y + TILE_SIZE + 6);
+        glVertex2f(x + TILE_SIZE - 2, y + TILE_SIZE - 10);
+        glEnd();
+
+        // Spike edge highlight
+        glColor3f(0.85f, 0.85f, 0.90f);
+        glBegin(GL_LINES);
+        glVertex2f(x + 9, y + TILE_SIZE + 8);
+        glVertex2f(x + 9, y + TILE_SIZE - 4);
+        glVertex2f(x + 21, y + TILE_SIZE + 10);
+        glVertex2f(x + 21, y + TILE_SIZE - 4);
+        glEnd();
+    }
 }
 
 void drawLevel() {
@@ -404,7 +625,21 @@ void drawLevel() {
         }
         glEnd(); // Added missing glEnd for space aura
     }
+    else if (currentActiveLevel == 5) {
+        // Jungle Canopy Glow
+        glColor3f(0.06f, 0.18f, 0.06f);
+        glVertex2f(0, WINDOW_HEIGHT);
+        glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT);
+        glColor3f(0.45f, 0.65f, 0.30f);
+        glVertex2f(WINDOW_WIDTH, 0);
+        glVertex2f(0, 0);
+    }
     glEnd();
+
+    // Jungle background layer (mountains, sun, distant trees) sits behind the tile grid
+    if (currentActiveLevel == 5) {
+        drawJungleBackground();
+    }
 
     // Draw Map Grid First
     for (int row = 0; row < ROWS; row++) {
@@ -418,5 +653,8 @@ void drawLevel() {
     // Draw Level 3 Specific Entities on top of background
     if(currentActiveLevel == 3) {
         drawMoonWorld();
+    }
+    else if(currentActiveLevel == 5) {
+        drawJungleWorld();
     }
 }
