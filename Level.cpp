@@ -1,6 +1,7 @@
 #include "Level.h"
 #include "Level1.h"
 #include "Level2.h"
+#include "level2logic.h"
 #include "level3.h"
 #include "level3logic.h"
 #include "Level4.h"
@@ -171,6 +172,11 @@ void drawRoundedRect(float x, float y, float w, float h, float r, float rColor, 
 
 void drawTile(float x, float y, int type) {
     if (type == 0) return;
+
+    if (currentActiveLevel == 2) {
+        drawLevel2Tile(x, y, type);
+        return;
+    }
 
     // Global time variables for smooth animations
     float timeSec = glutGet(GLUT_ELAPSED_TIME) * 0.001f;
