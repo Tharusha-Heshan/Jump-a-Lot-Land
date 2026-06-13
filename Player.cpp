@@ -55,13 +55,31 @@ void updatePlayerPhysics() {
         isMoving = false;
     }
 
+    // FIXED: Added curly braces so isGrounded changes only when jumping
     if ((keyStates['w'] || keyStates['W']) && isGrounded) {
-
-       if(currentActiveLevel == 3)
-        playerVy = 8.5f;      // Higher moon jump
-    else
-        playerVy = JUMP_FORCE;
+        if (currentActiveLevel == 3) {
+            playerVy = 8.5f;      // Higher moon jump
+        } else {
+            playerVy = JUMP_FORCE;
+        }
         isGrounded = false;
+    }
+
+    // Check current player center grid tile AND the tile right below their feet
+    int checkCol = (int)((playerX + PLAYER_WIDTH / 2.0f) / TILE_SIZE);
+    int checkRow = (int)((WINDOW_HEIGHT - (playerY + PLAYER_HEIGHT / 2.0f)) / TILE_SIZE);
+    int rowBelow = checkRow + 1; // Grid cell directly below feet
+
+    if (checkCol >= 0 && checkCol < COLS) {
+        bool hittingFlagTile = false;
+
+        if (checkRow >= 0 && checkRow < ROWS && levelMap[checkRow][checkCol] == 14) hittingFlagTile = true;
+        if (rowBelow >= 0 && rowBelow < ROWS && levelMap[rowBelow][checkCol] == 14) hittingFlagTile = true;
+
+        if (hittingFlagTile && !flagTriggered && !playerDiedUI) {
+            flagTriggered = true;
+            levelCompleteUI = true;
+        }
     }
 
     playerX += playerVx;
@@ -69,16 +87,19 @@ void updatePlayerPhysics() {
         playerX -= playerVx;
     }
 
-   float gravity = GRAVITY;
+    // FIXED: Changed MOVE_SPEED modification to setting playerVy velocity for the bounce pad boost
+    if (isTouchingBouncePad(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT)) {
+        playerVy = 10.0f;
+        isGrounded = false;
+    }
 
-        if(currentActiveLevel == 3)
-        {
-            gravity = -0.20f;    // Moon gravity
-        }
+    float gravity = GRAVITY;
 
-        playerVy += gravity;
+    if (currentActiveLevel == 3) {
+        gravity = -0.20f;    // Moon gravity
+    }
 
-
+    playerVy += gravity;
     playerY += playerVy;
 
     if (checkCollision(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT)) {
@@ -91,8 +112,11 @@ void updatePlayerPhysics() {
         isGrounded = false;
     }
 
+    // FIXED: Instead of instant respawn, trigger the Death UI state when touching lava blocks or falling off-screen
     if (checkLavaCollision(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT) || playerY < 0) {
-        respawnPlayer();
+        if (!playerDiedUI && !levelCompleteUI) {
+            playerDiedUI = true;
+        }
     }
 
     if (isMoving && isGrounded) {

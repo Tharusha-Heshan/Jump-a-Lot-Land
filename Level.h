@@ -19,11 +19,18 @@ extern float platform1Speed;
 extern float platform2Speed;
 extern float platform3Speed;
 
+extern bool levelCompleteUI;
+extern bool playerDiedUI;
+extern bool flagTriggered;
+
 
 void loadLevel(int levelID);
 void drawTile(float x, float y, int type);
 void drawLevel();
+void updateLevelElements();
+void drawLevelUI();
 bool checkCollision(float x, float y, float width, float height);
 bool checkLavaCollision(float x, float y, float width, float height);
+bool isTouchingBouncePad(float x, float y, float width, float height);
 
 #endif
