@@ -84,16 +84,7 @@ void updatePhysicsLoop(int value) {
             winMessageShown = true;
         }
     }
-    // Level 5 Updates
-    else if(currentActiveLevel == 5)
-    {
-        updateLevel5(0.016f);
-        if(isLevel5Complete() && !winMessageShown)
-        {
-            printf("LEVEL 5 COMPLETE!\n");
-            winMessageShown = true;
-        }
-    }
+    // Level 5 Updates (Cleaned up the duplicate block here)
     else if(currentActiveLevel == 5)
     {
         updateLevel5(0.016f);
@@ -108,6 +99,31 @@ void updatePhysicsLoop(int value) {
     glutTimerFunc(16, updatePhysicsLoop, 0);
 }
 
+void drawString(float x, float y, void* font, const char* string) {
+    glRasterPos2f(x, y); // Sets the starting position for the text
+    while (*string) {
+        glutBitmapCharacter(font, *string);
+        string++;
+    }
+}
+
+void drawUIGuide() {
+    // 1. Draw a dark semi-transparent background bar at the bottom of the screen
+    glColor4f(0.0f, 0.0f, 0.0f, 0.6f); // Black with 60% opacity
+    glBegin(GL_QUADS);
+        glVertex2f(0, 0);
+        glVertex2f(WINDOW_WIDTH, 0);
+        glVertex2f(WINDOW_WIDTH, 35); // Bar height of 35 pixels
+        glVertex2f(0, 35);
+    glEnd();
+
+    // 2. Draw the text guide in bright white
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    // Position the text slightly padded inside the bar
+    // Change this line in your drawUIGuide function:
+    drawString(20.0f, 12.0f, GLUT_BITMAP_HELVETICA_10, "CONTROLS: WASD to Move   |   PRESS [1] - [5] to Load Levels");
+}
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -128,6 +144,9 @@ void display() {
     drawPlayer();
     drawLevelUI();
 
+    // 4. Draw the UI Guide last so it overlays on top of everything nicely
+    drawUIGuide();
+
     glutSwapBuffers();
 }
 
@@ -136,6 +155,10 @@ void init() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT);
+
+    // Added blending setup here to make the transparency in drawUIGuide work smoothly!
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     loadLevel(1);
 }

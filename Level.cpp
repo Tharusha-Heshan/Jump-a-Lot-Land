@@ -109,12 +109,14 @@ bool checkCollision(float x, float y, float width, float height) {
 
         if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
             int tileType = levelMap[row][col];
-            // Solid Ground Mapping: Added cloud platforms (20) and cloud blocks (21)
+
+            // Solid Ground Mapping: Added Level 5 solid tiles (15, 16)
+            // Updated from: Player.cpp
             if (tileType == 1 || tileType == 2 || tileType == 5 || tileType == 6 || tileType == 7 ||
-                tileType == 11 || tileType == 12 || tileType == 20 || tileType == 21) {
+                tileType == 11 || tileType == 12 || tileType == 20 || tileType == 21 ||
+                tileType == 15 || tileType == 16) {
                 return true;
             }
-
         }
     }
 
@@ -132,6 +134,7 @@ bool checkCollision(float x, float y, float width, float height) {
         }
     }
 
+    // Level 5 Moving Platform Collisions
     if(currentActiveLevel == 5) {
         if(checkPlatform5Collision(x, y, width, height)) {
             return true;
@@ -879,6 +882,69 @@ void drawTile(float x, float y, int type) {
     }
 }
 
+void drawLavaBackground() {
+    float timeSec = glutGet(GLUT_ELAPSED_TIME) * 0.001f;
+
+    // 1. Sky Background (Deep charcoal/lava-warmed dark red)
+    glColor3f(0.12f, 0.04f, 0.03f);
+    glBegin(GL_QUADS);
+    glVertex2f(0, 0);
+    glVertex2f(WINDOW_WIDTH, 0);
+    glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glVertex2f(0, WINDOW_HEIGHT);
+    glEnd();
+
+    // 2. Far Mountains (Faded, warm dark ash)
+    glColor3f(0.22f, 0.12f, 0.08f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-100.0f, 250.0f); glVertex2f(150.0f, 480.0f); glVertex2f(450.0f, 250.0f);
+    glVertex2f(250.0f, 250.0f); glVertex2f(600.0f, 550.0f); glVertex2f(950.0f, 250.0f);
+    glVertex2f(700.0f, 250.0f); glVertex2f(900.0f, 400.0f); glVertex2f(1200.0f, 250.0f);
+    glEnd();
+
+    // 3. Mid Mountains (Slightly darker, earthy brown)
+    glColor3f(0.14f, 0.07f, 0.05f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-50.0f, 150.0f); glVertex2f(200.0f, 380.0f); glVertex2f(450.0f, 150.0f);
+    glVertex2f(300.0f, 150.0f); glVertex2f(550.0f, 420.0f); glVertex2f(800.0f, 150.0f);
+    glVertex2f(650.0f, 150.0f); glVertex2f(850.0f, 320.0f); glVertex2f(1100.0f, 150.0f);
+    glEnd();
+
+    // 4. Near Mountains (Crisp foreground, dark burnt umber)
+    glColor3f(0.08f, 0.03f, 0.02f);
+    glBegin(GL_TRIANGLES);
+    glVertex2f(-100.0f, 0.0f); glVertex2f(100.0f, 250.0f); glVertex2f(350.0f, 0.0f);
+    glVertex2f(150.0f, 0.0f); glVertex2f(400.0f, 280.0f); glVertex2f(650.0f, 0.0f);
+    glVertex2f(450.0f, 0.0f); glVertex2f(750.0f, 300.0f); glVertex2f(1050.0f, 0.0f);
+    glEnd();
+
+    // 5. Animating Subtle Mist (Heated, ember-tinted haze)
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Mist Layer 1 (Slow, shifting warm haze)
+    float mistOffset1 = sinf(timeSec * 0.4f) * 40.0f;
+    glColor4f(0.5f, 0.25f, 0.15f, 0.15f); // Tinted warm/orangey
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, 200.0f + mistOffset1);
+    glVertex2f(WINDOW_WIDTH, 150.0f - mistOffset1);
+    glVertex2f(WINDOW_WIDTH, 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glEnd();
+
+    // Mist Layer 2 (Faster, rolling ember glow)
+    float mistOffset2 = cosf(timeSec * 0.6f) * 30.0f;
+    glColor4f(0.6f, 0.3f, 0.1f, 0.1f); // Slightly more vibrant orange
+    glBegin(GL_QUADS);
+    glVertex2f(0.0f, 100.0f - mistOffset2);
+    glVertex2f(WINDOW_WIDTH, 120.0f + mistOffset2);
+    glVertex2f(WINDOW_WIDTH, 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glEnd();
+
+    glDisable(GL_BLEND);
+}
+
 void drawLevel() {
     glPushMatrix();
 
@@ -890,6 +956,7 @@ void drawLevel() {
 
     if (currentActiveLevel == 1) {
         glBegin(GL_QUADS);
+        drawLavaBackground();
         glColor3f(0.18f, 0.02f, 0.02f);
         glVertex2f(0, WINDOW_HEIGHT);
         glVertex2f(WINDOW_WIDTH, WINDOW_HEIGHT);
