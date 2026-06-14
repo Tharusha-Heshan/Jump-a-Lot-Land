@@ -33,6 +33,46 @@ LavaBlob lavaBlobs[MAX_BLOBS] = {
     { 650.0f, 900.0f, -2.5f }
 };
 
+struct Bat {
+    float x, y;
+    float dx, dy;
+    bool active;
+};
+
+const int MAX_BATS = 5;
+Bat lavaBats[MAX_BATS];
+
+void initBats() {
+    for (int i = 0; i < MAX_BATS; i++) {
+        lavaBats[i].x = (float)(rand() % (int)WINDOW_WIDTH);
+        lavaBats[i].y = (float)(rand() % (int)WINDOW_HEIGHT);
+        // Slower speed (between 0.5 and 1.5)
+        lavaBats[i].dx = (float)((rand() % 3) + 1) * 0.5f;
+        lavaBats[i].dy = (float)((rand() % 3) + 1) * 0.5f;
+        lavaBats[i].active = true; // Used to track collision state
+    }
+}
+
+struct Ember {
+    float x, y;
+    float size;
+    float speed;
+    float swayPhase;
+};
+
+const int MAX_EMBERS = 45;
+Ember lavaEmbers[MAX_EMBERS];
+
+void initEmbers() {
+    for (int i = 0; i < MAX_EMBERS; i++) {
+        lavaEmbers[i].x = (float)(rand() % (int)WINDOW_WIDTH);
+        lavaEmbers[i].y = (float)(rand() % (int)WINDOW_HEIGHT);
+        lavaEmbers[i].size = (float)((rand() % 4) + 2); // Size between 2 and 5
+        lavaEmbers[i].speed = (float)((rand() % 3) + 1) * 0.4f; // Float upwards
+        lavaEmbers[i].swayPhase = (float)(rand() % 100);
+    }
+}
+
 void loadLevel(int levelID) {
 
     currentActiveLevel = levelID;
@@ -72,6 +112,8 @@ void loadLevel(int levelID) {
     {
     case 1:
         setSpawnPoint(50.0f, 200.0f);
+        initBats();    // <-- ADD THIS
+        initEmbers();
         break;
 
     case 2:
@@ -116,6 +158,13 @@ bool checkCollision(float x, float y, float width, float height) {
                 tileType == 11 || tileType == 12 || tileType == 20 || tileType == 21 ||
                 tileType == 15 || tileType == 16) {
                 return true;
+            }
+            if (tileType == 26) {
+                float tileTopY = WINDOW_HEIGHT - (row) * TILE_SIZE; // Top Y of tile
+                // Collision only if player is in the top 50%
+                if (corners[i][1] >= tileTopY - TILE_SIZE * 0.5f) {
+                    return true;
+                }
             }
         }
     }
@@ -880,6 +929,41 @@ void drawTile(float x, float y, int type) {
         glVertex2f(x, y + TILE_SIZE);
         glEnd();
     }
+    else if (type == 26) { // Upside Down Scaling Lava Spikes
+        // 1. Draw the Solid Base (Top 50% of the tile - now acts as a ceiling/hanging block)
+        glColor3f(0.18f, 0.14f, 0.14f);
+        glBegin(GL_QUADS);
+        glVertex2f(x, y + TILE_SIZE * 0.5f);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE * 0.5f);
+        glVertex2f(x + TILE_SIZE, y + TILE_SIZE);
+        glVertex2f(x, y + TILE_SIZE);
+        glEnd();
+
+        // 2. Longer Scaling Animation (Increased multiplier from 0.5 to 0.8)
+        float scale = (sinf(timeSec * 8.0f + x * 0.1f) + 1.0f) * 0.5f;
+        float maxSpikeHeight = TILE_SIZE * 0.8f; // Now grows 80% of tile height
+        float currentSpikeHeight = maxSpikeHeight * scale;
+
+        // 3. Draw the 3 Animated Lava Spikes (Growing DOWNWARD)
+        glColor3f(1.0f, 0.35f, 0.0f);
+        glBegin(GL_TRIANGLES);
+
+        // Spike 1
+        glVertex2f(x + 2, y + TILE_SIZE * 0.5f);
+        glVertex2f(x + 10, y + TILE_SIZE * 0.5f - currentSpikeHeight);
+        glVertex2f(x + 14, y + TILE_SIZE * 0.5f);
+
+        // Spike 2
+        glVertex2f(x + 14, y + TILE_SIZE * 0.5f);
+        glVertex2f(x + 20, y + TILE_SIZE * 0.5f - currentSpikeHeight);
+        glVertex2f(x + 26, y + TILE_SIZE * 0.5f);
+
+        // Spike 3
+        glVertex2f(x + 26, y + TILE_SIZE * 0.5f);
+        glVertex2f(x + 30, y + TILE_SIZE * 0.5f - currentSpikeHeight);
+        glVertex2f(x + TILE_SIZE - 2, y + TILE_SIZE * 0.5f);
+        glEnd();
+    }
 }
 
 void drawLavaBackground() {
@@ -943,6 +1027,77 @@ void drawLavaBackground() {
     glEnd();
 
     glDisable(GL_BLEND);
+}
+
+void drawLevel1Decorations() {
+    float timeSec = glutGet(GLUT_ELAPSED_TIME) * 0.001f;
+
+    // 1. Draw Rising Embers
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    for (int i = 0; i < MAX_EMBERS; i++) {
+        float alpha = 0.5f + (sinf(timeSec * 5.0f + i) * 0.3f);
+        glColor4f(1.0f, 0.5f, 0.0f, alpha);
+
+        glBegin(GL_QUADS);
+        glVertex2f(lavaEmbers[i].x, lavaEmbers[i].y);
+        glVertex2f(lavaEmbers[i].x + lavaEmbers[i].size, lavaEmbers[i].y);
+        glVertex2f(lavaEmbers[i].x + lavaEmbers[i].size, lavaEmbers[i].y + lavaEmbers[i].size);
+        glVertex2f(lavaEmbers[i].x, lavaEmbers[i].y + lavaEmbers[i].size);
+        glEnd();
+    }
+    glDisable(GL_BLEND);
+
+    // 2. Draw Fire Bats
+    for (int i = 0; i < MAX_BATS; i++) {
+        float bx = lavaBats[i].x;
+        float by = lavaBats[i].y;
+        float wingFlap = sinf(timeSec * 15.0f + i) * 20.0f;
+
+        // --- CIRCLE BODY START ---
+        if (!lavaBats[i].active) {
+            glColor4f(0.3f, 0.0f, 0.0f, 0.5f);
+        } else {
+            glColor3f(0.85f, 0.15f, 0.15f);
+        }
+
+        const int segments = 16; // Number of triangles to create circle smoothness
+        const float radius = 10.0f; // Matches the size of your previous 20x20 box
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(bx, by); // Center point
+        for(int j = 0; j <= segments; j++) {
+            float angle = 2.0f * 3.14159f * j / segments;
+            glVertex2f(bx + radius * cosf(angle), by + radius * sinf(angle));
+        }
+        glEnd();
+        // --- CIRCLE BODY END ---
+
+        if (!lavaBats[i].active) {
+            glColor4f(0.2f, 0.0f, 0.0f, 0.5f);
+        } else {
+            glColor3f(0.55f, 0.05f, 0.05f);
+        }
+
+        glBegin(GL_TRIANGLES);
+        // Left Wing (positioned relative to circle center)
+        glVertex2f(bx - 5, by + 4);
+        glVertex2f(bx - 36, by + wingFlap);
+        glVertex2f(bx - 20, by - 16);
+        // Right Wing (positioned relative to circle center)
+        glVertex2f(bx + 5, by + 4);
+        glVertex2f(bx + 36, by + wingFlap);
+        glVertex2f(bx + 10, by - 16);
+        glEnd();
+
+        if (lavaBats[i].active) {
+            glColor3f(1.0f, 1.0f, 0.2f);
+            glPointSize(5.0f);
+            glBegin(GL_POINTS);
+            glVertex2f(bx - 3, by + 3);
+            glVertex2f(bx + 3, by + 3);
+            glEnd();
+        }
+    }
 }
 
 void drawLevel() {
@@ -1027,6 +1182,10 @@ void drawLevel() {
         }
     }
 
+    if (currentActiveLevel == 1) {
+        drawLevel1Decorations();
+    }
+
     if(currentActiveLevel == 3) {
         drawMoonWorld();
     }
@@ -1079,12 +1238,21 @@ void updateLevelElements() {
             playerDiedUI = false;
             deathTimer = 0.0f;
             respawnPlayer(); // Triggers your engine to reset player position
+
+            // --- ADD THIS TO RESET BATS ON RESPAWN ---
+            if (currentActiveLevel == 1) {
+                for (int i = 0; i < MAX_BATS; i++) {
+                    lavaBats[i].active = true;
+                }
+            }
+            // -----------------------------------------
         }
         return; // Pauses the lava blobs from moving while the death UI is shown
     }
 
     // 3. Falling Lava Blobs Physics
     if (currentActiveLevel == 1) {
+        // --- EXISTING LAVA BLOB CODE ---
         for (int i = 0; i < MAX_BLOBS; i++) {
             lavaBlobs[i].y += lavaBlobs[i].vy;
 
@@ -1098,6 +1266,40 @@ void updateLevelElements() {
                 lavaBlobs[i].y + 14.0f > playerY && lavaBlobs[i].y < playerY + 32.0f) {
 
                 playerDiedUI = true; // Trigger the UI overlay instead of instant death
+            }
+        }
+
+        // --- NEW BAT LOGIC ---
+        for (int i = 0; i < MAX_BATS; i++) {
+            lavaBats[i].x += lavaBats[i].dx;
+            lavaBats[i].y += lavaBats[i].dy;
+
+            // Bounce bats off the edges of the screen
+            if (lavaBats[i].x <= 0 || lavaBats[i].x >= WINDOW_WIDTH) lavaBats[i].dx *= -1;
+            if (lavaBats[i].y <= 0 || lavaBats[i].y >= WINDOW_HEIGHT) lavaBats[i].dy *= -1;
+
+            // ONLY check collision if the bat is active (hasn't hit the player yet)
+            if (lavaBats[i].active) {
+                // Bat AABB Collision with Player (Hitbox doubled to +/- 20 to match 2x size)
+                if (lavaBats[i].x + 20.0f > playerX && lavaBats[i].x - 20.0f < playerX + 24.0f &&
+                    lavaBats[i].y + 20.0f > playerY && lavaBats[i].y - 20.0f < playerY + 32.0f) {
+
+                    playerDiedUI = true;
+                    lavaBats[i].active = false; // Disable collision so it doesn't repeatedly kill you!
+                }
+            }
+        }
+
+        // --- NEW EMBER LOGIC ---
+        for (int i = 0; i < MAX_EMBERS; i++) {
+            lavaEmbers[i].y += lavaEmbers[i].speed; // Float up
+            lavaEmbers[i].swayPhase += 0.05f;
+            lavaEmbers[i].x += sinf(lavaEmbers[i].swayPhase) * 1.5f; // Wavy wind motion
+
+            // Reset ember to the bottom if it floats past the top
+            if (lavaEmbers[i].y > WINDOW_HEIGHT) {
+                lavaEmbers[i].y = -10.0f;
+                lavaEmbers[i].x = (float)(rand() % (int)WINDOW_WIDTH);
             }
         }
     }
@@ -1124,6 +1326,30 @@ void updateLevelElements() {
                         (bx2 > playerX && bx2 < playerX + 24.0f && by2 > playerY && by2 < playerY + 32.0f)) {
                         playerDiedUI = true;
                     }
+                }
+            }
+        }
+    }
+
+    // --- SCALING LAVA SPIKE HAZARDS (TILE 26) ---
+    float timeSec = glutGet(GLUT_ELAPSED_TIME) * 0.001f;
+    for (int r = 0; r < ROWS; r++) {
+        for (int c = 0; c < COLS; c++) {
+            if (levelMap[r][c] == 26) {
+                float px = c * TILE_SIZE;
+                float py = WINDOW_HEIGHT - (r + 1) * TILE_SIZE; // Bottom of tile
+
+                float scale = (sinf(timeSec * 8.0f + px * 0.1f) + 1.0f) * 0.5f;
+                float currentSpikeHeight = (TILE_SIZE * 0.8f) * scale;
+
+                // Spike Hazard Hitbox: Grows DOWN from the 50% mark
+                float hazardTop = py + TILE_SIZE * 0.5f;
+                float hazardBottom = hazardTop - currentSpikeHeight;
+
+                if (playerX + 20.0f > px && playerX < px + TILE_SIZE &&
+                    playerY + 32.0f > hazardBottom && playerY < hazardTop) {
+
+                    playerDiedUI = true;
                 }
             }
         }
